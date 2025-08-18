@@ -29,8 +29,8 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
             set -e
 
-            rm -rf ~/Terragit
-            git clone https://github.com/Fardeen313/Terragit.git
+            rm -rf ~/terra_lint
+            git clone https://github.com/megha-1299/terra_lint.git
             cd Terragit/S3_Bucket
 
             echo "📌 Running terraform init..."
