@@ -3,7 +3,7 @@ name: Provision S3 via EC2 Terraform
 on:
   push:
     branches:
-      - main   # 👈 runs automatically on every commit to main
+      - main
   workflow_dispatch:
     inputs:
       confirm_apply:
@@ -22,8 +22,10 @@ jobs:
           chmod 600 ~/.ssh/lint.pem
 
       - name: Run Terraform on EC2
+        env:
+          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<EC2_PUBLIC_IP> << 'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<EC2_PUBLIC_IP> 'bash -s' <<'EOF'
             set -e
             rm -rf ~/terra_lint
             git clone https://github.com/megha-1299/terra_lint.git
@@ -42,8 +44,7 @@ jobs:
               echo "❌ Skipping terraform apply (confirmation not given)"
             fi
           EOF
-        env:
-          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
+
 
 
 
