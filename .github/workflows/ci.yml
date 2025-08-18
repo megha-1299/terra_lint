@@ -25,7 +25,7 @@ jobs:
         env:
           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<EC2_PUBLIC_IP> 'bash -s' <<'EOF'
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<43.204.22.203> 'bash -s' <<'EOF'
             set -e
             rm -rf ~/terra_lint
             git clone https://github.com/megha-1299/terra_lint.git
