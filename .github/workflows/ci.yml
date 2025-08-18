@@ -43,7 +43,8 @@ jobs:
             fi
           EOF
         env:
-          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
+          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply }}
+
 
 
 # name: Destroy S3 via EC2 Terraform
