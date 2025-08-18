@@ -31,7 +31,7 @@ jobs:
 
             rm -rf ~/terra_lint
             git clone https://github.com/megha-1299/terra_lint.git
-            cd Terragit/S3_Bucket
+            cd terra_lint/Configuration
 
             echo "📌 Running terraform init..."
             terraform init -input=false
