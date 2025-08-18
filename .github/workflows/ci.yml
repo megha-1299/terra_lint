@@ -18,20 +18,20 @@ jobs:
       - name: Setup SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/thanos.pem
-          chmod 600 ~/.ssh/thanos.pem
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/lint.pem
+          chmod 600 ~/.ssh/lint.pem
 
       - name: Run Terraform on EC2
         env:
           # 👇 Default "yes" if input not provided (push event)
           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
             set -e
 
-            rm -rf ~/Terragit
-            git clone https://github.com/Fardeen313/Terragit.git
-            cd Terragit/S3_Bucket
+            rm -rf ~/terra_lint
+            git clone https://github.com/megha-1299/terra_lint.git
+            cd terra_lint/Configuration
 
             echo "📌 Running terraform init..."
             terraform init -input=false
