@@ -112,34 +112,25 @@ provider "aws" {
   }
  
  # data source 
- data "aws_vpc" "main" {
-  tags = {
-    Name = "Jumphost_vpc"  # Specify the name of your existing VPC
-  }
+data "aws_vpc" "main" {
+  id = "vpc-06ab58d47f42aff7c"
 }
 
-data "aws_subnet" "public_subnet_a" {
- vpc_id = data.aws_vpc.main.id
- filter {
-    name = "tag:Name"
-    values = ["Jumphost-subnet1"]
- }
+
+data "aws_subnet" "subnet_1" {
+  id = "subnet-0a4dcce4d5f91c351"
 }
 
-data "aws_subnet" "private_subnet_a" {
- vpc_id = data.aws_vpc.main.id
- filter {
-    name = "tag:Name"
-    values = ["Jumphost-subnet2"]
- }
+
+data "aws_subnet" "subnet_2" {
+  id = "subnet-0c859151bc9c6e30d"
 }
+
+# Fetch existing Security Group by ID
 data "aws_security_group" "selected" {
-  vpc_id = data.aws_vpc.main.id
-  filter {
-    name = "tag:Name"
-    values = ["Jumphost-sg"]
- }
+  id = "sg-048f8b28b02ff57d4"
 }
+
 
  #Creating EKS Cluster
   resource "aws_eks_cluster" "eks" {
@@ -147,7 +138,7 @@ data "aws_security_group" "selected" {
     role_arn = aws_iam_role.master.arn
 
     vpc_config {
-      subnet_ids = [data.aws_subnet.public_subnet_a.id, data.aws_subnet.private_subnet_a.id]
+      subnet_ids = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
     }
 
     tags = {
@@ -164,13 +155,14 @@ data "aws_security_group" "selected" {
     cluster_name    = aws_eks_cluster.eks.name
     node_group_name = "project-node-group"
     node_role_arn   = aws_iam_role.worker.arn
-    subnet_ids      = [data.aws_subnet.subnet-1.id, data.aws_subnet.subnet-2.id]
+    subnet_ids = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
+
     capacity_type   = "ON_DEMAND"
     disk_size       = 20
     instance_types  = ["t2.small"]
 
     remote_access {
-      ec2_ssh_key               = "demo-key"
+      ec2_ssh_key               = "lint"
       source_security_group_ids = [data.aws_security_group.selected.id]
     }
 
