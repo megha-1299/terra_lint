@@ -22,28 +22,29 @@ jobs:
           chmod 600 ~/.ssh/lint.pem
 
       - name: Run Terraform on EC2
-  run: |
-    ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<EC2_PUBLIC_IP> << 'EOF'
-      set -e
-      rm -rf ~/terra_lint
-      git clone https://github.com/megha-1299/terra_lint.git
-      cd terra_lint/Configuration
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/lint.pem ec2-user@<EC2_PUBLIC_IP> << 'EOF'
+            set -e
+            rm -rf ~/terra_lint
+            git clone https://github.com/megha-1299/terra_lint.git
+            cd terra_lint/Configuration
 
-      echo "📌 Running terraform init..."
-      terraform init -input=false
+            echo "📌 Running terraform init..."
+            terraform init -input=false
 
-      echo "📌 Running terraform plan..."
-      terraform plan -out=tfplan -input=false
+            echo "📌 Running terraform plan..."
+            terraform plan -out=tfplan -input=false
 
-      if [ "$CONFIRM_APPLY" = "yes" ]; then
-        echo "✅ Applying Terraform changes..."
-        terraform apply -input=false -auto-approve tfplan
-      else
-        echo "❌ Skipping terraform apply (confirmation not given)"
-      fi
-    EOF
-  env:
-    CONFIRM_APPLY: yes
+            if [ "$CONFIRM_APPLY" = "yes" ]; then
+              echo "✅ Applying Terraform changes..."
+              terraform apply -input=false -auto-approve tfplan
+            else
+              echo "❌ Skipping terraform apply (confirmation not given)"
+            fi
+          EOF
+        env:
+          CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
+
 
 # name: Destroy S3 via EC2 Terraform
 
