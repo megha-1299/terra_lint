@@ -154,7 +154,7 @@ data "aws_subnet" "subnet_2" {
 data "aws_security_group" "selected" {
   filter {
     name   = "tag:Name"
-    values = ["my-sg"]   # <-- Replace with your SG name if available
+    values = ["sg"]   # <-- Replace with your SG name if available
   }
 
   vpc_id = data.aws_vpc.main.id
