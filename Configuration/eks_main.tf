@@ -94,7 +94,7 @@ data "aws_subnet" "subnet1" {
   vpc_id = data.aws_vpc.main.id
   filter {
     name   = "tag:Name"
-    values = ["my-subnet1"]
+    values = ["subnet_1"]
   }
 }
 
@@ -102,7 +102,7 @@ data "aws_subnet" "subnet2" {
   vpc_id = data.aws_vpc.main.id
   filter {
     name   = "tag:Name"
-    values = ["my-subnet2"]
+    values = ["subnet_2"]
   }
 }
 
@@ -110,7 +110,7 @@ data "aws_security_group" "selected" {
   vpc_id = data.aws_vpc.main.id
   filter {
     name   = "tag:Name"
-    values = ["my-sg"]
+    values = ["sg"]
   }
 }
 
