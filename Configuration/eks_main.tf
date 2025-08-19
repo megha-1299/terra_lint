@@ -1,4 +1,4 @@
-#
+/*
 provider "aws" {
   region = "ap-south-1"  # Specify your desired region
 }
@@ -186,3 +186,4 @@ data "aws_security_group" "selected" {
       aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
     ]
   }
+*/
