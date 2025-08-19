@@ -1,4 +1,14 @@
-/*
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+
+  required_version = ">= 1.3.0"
+}
+
 provider "aws" {
   region = "ap-south-1"  # Specify your desired region
 }
@@ -186,20 +196,9 @@ data "aws_security_group" "selected" {
       aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
     ]
   }
-*/
-
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 5.0"
-    }
-  }
-
-  required_version = ">= 1.3.0"
-}
 
 
+/*
 provider "aws" { 
   region = "us-east-1"   # change this to your preferred region
 }
@@ -215,3 +214,4 @@ resource "aws_s3_bucket" "my_bucket" {
   }
 }
 
+*/
