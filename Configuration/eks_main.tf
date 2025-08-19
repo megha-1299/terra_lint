@@ -44,7 +44,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSVPCResourceController" {
 
 # IAM Role for Worker Nodes
 resource "aws_iam_role" "eks_worker_role" {
-  name = "eks-worker-role-new"
+  name = "eks-worker-role1"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
