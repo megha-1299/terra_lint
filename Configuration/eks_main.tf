@@ -122,34 +122,53 @@ provider "aws" {
   }
  
  # data source 
+# Fetch existing VPC by Name
 data "aws_vpc" "main" {
-  id = "vpc-06ab58d47f42aff7c"
+  filter {
+    name   = "tag:Name"
+    values = ["my-vpc"]
+  }
 }
 
-
+# Fetch existing Subnet 1 by Name
 data "aws_subnet" "subnet_1" {
-  id = "subnet-0a4dcce4d5f91c351"
+  filter {
+    name   = "tag:Name"
+    values = ["subnet_1"]
+  }
+
+  vpc_id = data.aws_vpc.main.id
 }
 
-
+# Fetch existing Subnet 2 by Name
 data "aws_subnet" "subnet_2" {
-  id = "subnet-0c859151bc9c6e30d"
+  filter {
+    name   = "tag:Name"
+    values = ["subnet_2"]
+  }
+
+  vpc_id = data.aws_vpc.main.id
 }
 
-# Fetch existing Security Group by ID
+# Fetch existing Security Group by Name (if you want by Name instead of ID)
 data "aws_security_group" "selected" {
-  id = "sg-048f8b28b02ff57d4"
-}
+  filter {
+    name   = "tag:Name"
+    values = ["my-sg"]   # <-- Replace with your SG name if available
+  }
 
+  vpc_id = data.aws_vpc.main.id
+}
 
  #Creating EKS Cluster
   resource "aws_eks_cluster" "eks" {
     name     = "project-eks"
     role_arn = aws_iam_role.master.arn
 
-    vpc_config {
-      subnet_ids = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
-    }
+   vpc_config {
+  subnet_ids = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
+     }
+
 
     tags = {
       "Name" = "MyEKS"
