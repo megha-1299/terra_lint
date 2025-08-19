@@ -205,13 +205,13 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "my_bucket" {
-  bucket = "my-unique-bucket-name-1234554546765464"   # bucket name must be globally unique
-  
-  acl = private   # ❌ ERROR: missing quotes, should be "private"
+  bucket = "my-unique-bucket-name-1234554546765464"
+
+  acl = "private"
 
   tags = {
     Name        = "MyBucket"
-    Environment = Dev   # ❌ ERROR: missing quotes, should be "Dev"
+    Environment = "Dev"
   }
 }
 
