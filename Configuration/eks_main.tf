@@ -59,9 +59,10 @@ resource "aws_iam_role" "eks_worker_role" {
 }
 
 resource "aws_iam_instance_profile" "worker" {
-  name = "eks-worker-profile-new"
+  name = "eks-worker-profile-unique1"
   role = aws_iam_role.eks_worker_role.name
 }
+
 
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
