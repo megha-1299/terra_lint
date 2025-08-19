@@ -12,9 +12,7 @@ provider "aws" {
   region = "ap-south-1" # apne region ka naam daalna
 }
 
-# -------------------------
-# DATA SOURCES
-# -------------------------
+# ===================== VPC =====================
 data "aws_vpc" "selected" {
   filter {
     name   = "tag:Name"
@@ -22,6 +20,7 @@ data "aws_vpc" "selected" {
   }
 }
 
+# ===================== Subnets =====================
 data "aws_subnet" "subnet_1" {
   filter {
     name   = "tag:Name"
@@ -36,6 +35,7 @@ data "aws_subnet" "subnet_2" {
   }
 }
 
+# ===================== Security Group =====================
 data "aws_security_group" "sg" {
   filter {
     name   = "tag:Name"
@@ -43,13 +43,7 @@ data "aws_security_group" "sg" {
   }
 }
 
-data "aws_iam_role" "worker_role" {
-  name = "veera-eks-worker-new-role"
-}
-
-# -------------------------
-# EKS CLUSTER
-# -------------------------
+# ===================== EKS Cluster =====================
 resource "aws_eks_cluster" "eks_cluster" {
   name     = "my-eks-cluster"
   role_arn = data.aws_iam_role.worker_role.arn
@@ -62,9 +56,7 @@ resource "aws_eks_cluster" "eks_cluster" {
   depends_on = [data.aws_iam_role.worker_role]
 }
 
-# -------------------------
-# EKS NODE GROUP
-# -------------------------
+# ===================== Node Group =====================
 resource "aws_eks_node_group" "node_grp" {
   cluster_name    = aws_eks_cluster.eks_cluster.name
   node_group_name = "my-node-group"
@@ -76,24 +68,17 @@ resource "aws_eks_node_group" "node_grp" {
     max_size     = 3
     min_size     = 1
   }
-
-  depends_on = [aws_eks_cluster.eks_cluster]
 }
-output "cluster_name" {
+
+output "vpc_id" {
+  value = data.aws_vpc.selected.id
+}
+
+output "eks_cluster_name" {
   value = aws_eks_cluster.eks_cluster.name
 }
 
-output "cluster_endpoint" {
-  value = aws_eks_cluster.eks_cluster.endpoint
+output "node_group_name" {
+  value = aws_eks_node_group.node_grp.node_group_name
 }
 
-output "cluster_security_group_id" {
-  value = data.aws_security_group.sg.id
-}
-
-output "subnet_ids" {
-  value = [
-    data.aws_subnet.subnet_1.id,
-    data.aws_subnet.subnet_2.id
-  ]
-}
