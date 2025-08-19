@@ -1,3 +1,50 @@
+# name: Provision S3 via EC2 Terraform
+# #
+# on:
+#   push:
+#     branches:
+#       - main   # 👈 runs automatically on every commit to main
+#   workflow_dispatch:
+#     inputs:
+#       confirm_apply:
+#         description: "Do you want to apply Terraform changes? (yes/no)"
+#         required: true
+#         default: "yes"
+# #
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Setup SSH Key
+#         run: |
+#           mkdir -p ~/.ssh
+#           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/thanos.pem
+#           chmod 600 ~/.ssh/thanos.pem
+
+#       - name: Run Terraform on EC2
+#         env:
+#           # 👇 Default "yes" if input not provided (push event)
+#           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
+#         run: |
+#           ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
+#             set -e
+
+#             rm -rf ~/terra_lint
+#             git clone https://github.com/megha-1299/terra_lint.git
+#             cd terra_lint/Configuration
+
+#             echo "📌 Running terraform init..."
+#             terraform init -input=false
+
+#             echo "📌 Running terraform plan..."
+#             terraform plan -out=tfplan -input=false
+
+#             if [ "$CONFIRM_APPLY" = "yes" ]; then
+#               echo "✅ Applying Terraform changes..."
+#               terraform apply -input=false -auto-approve tfplan
+#             else
+#               echo "❌ Skipping terraform apply (confirmation not given)"
+
 name: Provision S3 via EC2 Terraform
 #
 on:
@@ -21,7 +68,7 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/thanos.pem
           chmod 600 ~/.ssh/thanos.pem
 
-      - name: Run Terraform on EC2
+      - name: Run Terraform on EC2 with TFLint
         env:
           # 👇 Default "yes" if input not provided (push event)
           CONFIRM_APPLY: ${{ github.event.inputs.confirm_apply || 'yes' }}
@@ -32,6 +79,14 @@ jobs:
             rm -rf ~/terra_lint
             git clone https://github.com/megha-1299/terra_lint.git
             cd terra_lint/Configuration
+
+            echo "📌 Installing TFLint..."
+            curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+            export PATH=\$PATH:/usr/local/bin
+
+            echo "📌 Running tflint..."
+            tflint --init
+            tflint
 
             echo "📌 Running terraform init..."
             terraform init -input=false
@@ -47,50 +102,6 @@ jobs:
             fi
           EOF
 
-# name: Destroy S3 via EC2 Terraform
-
-# on:
-#   push:
-#     branches:
-#       - main   # 👈 runs automatically on every commit to main
-#   workflow_dispatch:
-#     inputs:
-#       confirm_destroy:
-#         description: "Do you want to destroy Terraform resources? (yes/no)"
-#         required: true
-#         default: "yes"
-
-# jobs:
-#   destroy:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Setup SSH Key
-#         run: |
-#           mkdir -p ~/.ssh
-#           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/thanos.pem
-#           chmod 600 ~/.ssh/thanos.pem
-
-#       - name: Run Terraform Destroy on EC2
-#         env:
-#           CONFIRM_DESTROY: ${{ github.event.inputs.confirm_destroy || 'yes' }}
-#         run: |
-#           ssh -o StrictHostKeyChecking=no -i ~/.ssh/thanos.pem ec2-user@${{ secrets.EC2_HOST }} << EOF
-#             set -e
-
-#             rm -rf ~/Terragit
-#             git clone https://github.com/Fardeen313/Terragit.git
-#             cd Terragit/S3_Bucket
-
-#             echo "📌 Running terraform init..."
-#             terraform init -input=false
-
-#             echo "📌 Running terraform plan -destroy..."
-#             terraform plan -destroy -out=tfplan -input=false
-
-#             if [ "$CONFIRM_DESTROY" = "yes" ]; then
-#               echo "🔥 Destroying Terraform resources..."
-#               terraform apply -input=false -auto-approve tfplan
-#             else
-#               echo "❌ Skipping terraform destroy (confirmation not given)"
 #             fi
 #           EOF
+
