@@ -187,3 +187,19 @@ data "aws_security_group" "selected" {
     ]
   }
 */
+
+provider "aws" { 
+  region = "us-east-1"   # change this to your preferred region
+}
+
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "my-unique-bucket-name-1234554546765464"   # bucket name must be globally unique
+  
+  acl = private   # ❌ ERROR: missing quotes, should be "private"
+
+  tags = {
+    Name        = "MyBucket"
+    Environment = Dev   # ❌ ERROR: missing quotes, should be "Dev"
+  }
+}
+
