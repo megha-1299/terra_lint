@@ -10,7 +10,7 @@ terraform {
 provider "aws" {
   region = "ap-south-1" # Updated region
 }
-
+#
 # IAM Role for EKS Cluster
 resource "aws_iam_role" "eks_cluster_role" {
   name = "eks-cluster-role-new"
