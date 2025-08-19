@@ -13,119 +13,91 @@ provider "aws" {
   region = "ap-south-1"
 }
 
+# -------------------------
+# Data Sources
+# -------------------------
 
-# --- VPC Data Sources ---
+# VPC by Name
 data "aws_vpc" "selected" {
-  id = "vpc-0abcd1234efgh5678" # apna VPC ID dalna
+  filter {
+    name   = "tag:Name"
+    values = ["my-vpc"]
+  }
 }
 
-data "aws_subnet" "subnet_1" {
-  id = "subnet-048f8b28b02ff57d4" # apna subnet ID
+# Subnets by Name
+data "aws_subnet" "subnet1" {
+  filter {
+    name   = "tag:Name"
+    values = ["subnet_1"]
+  }
+  vpc_id = data.aws_vpc.selected.id
 }
 
-data "aws_subnet" "subnet_2" {
-  id = "subnet-0abcd1234efgh5678" # apna subnet ID
+data "aws_subnet" "subnet2" {
+  filter {
+    name   = "tag:Name"
+    values = ["subnet_2"]
+  }
+  vpc_id = data.aws_vpc.selected.id
 }
 
-data "aws_security_group" "selected" {
-  id = "sg-048f8b28b02ff57d4" # apna SG ID
+# Security Group by Name
+data "aws_security_group" "eks_sg" {
+  filter {
+    name   = "group-name"
+    values = ["sg"]
+  }
+  vpc_id = data.aws_vpc.selected.id
 }
 
-# --- IAM Role for EKS Cluster ---
-resource "aws_iam_role" "eks_cluster_role" {
-  name = "veera-eks-cluster-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "eks.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
+# IAM Role for Worker Nodes
+data "aws_iam_role" "worker_role" {
+  name = "veera-eks-worker-role"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKSClusterPolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  role       = aws_iam_role.eks_cluster_role.name
+# IAM Instance Profile for Worker Nodes
+data "aws_iam_instance_profile" "worker_profile" {
+  name = "veera-eks-worker-new-profile2"
 }
 
-resource "aws_iam_role_policy_attachment" "AmazonEKSServicePolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSServicePolicy"
-  role       = aws_iam_role.eks_cluster_role.name
-}
+# -------------------------
+# EKS Cluster
+# -------------------------
 
-# --- EKS Cluster ---
-resource "aws_eks_cluster" "eks" {
-  name     = "veera-eks-cluster"
-  role_arn = aws_iam_role.eks_cluster_role.arn
+resource "aws_eks_cluster" "eks_cluster" {
+  name     = "veera-eks"
+  role_arn = data.aws_iam_role.worker_role.arn
 
   vpc_config {
-    subnet_ids         = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
-    security_group_ids = [data.aws_security_group.selected.id]
+    subnet_ids         = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
+    security_group_ids = [data.aws_security_group.eks_sg.id]
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.AmazonEKSClusterPolicy,
-    aws_iam_role_policy_attachment.AmazonEKSServicePolicy,
+    data.aws_iam_role.worker_role
   ]
 }
 
-# --- IAM Role for Worker Nodes ---
-resource "aws_iam_role" "worker" {
-  name = "veera-eks-worker-role"
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "ec2.amazonaws.com"
-        }
-        Action = "sts:AssumeRole"
-      }
-    ]
-  })
-}
+# -------------------------
+# EKS Node Group
+# -------------------------
 
-resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.worker.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEKS_CNI_Policy" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
-  role       = aws_iam_role.worker.name
-}
-
-resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
-  role       = aws_iam_role.worker.name
-}
-
-# --- EKS Node Group ---
-resource "aws_eks_node_group" "node-grp" {
-  cluster_name    = aws_eks_cluster.eks.name
-  node_group_name = "project-node-group"
-  node_role_arn   = aws_iam_role.worker.arn
-  subnet_ids      = [data.aws_subnet.subnet_1.id, data.aws_subnet.subnet_2.id]
+resource "aws_eks_node_group" "node_grp" {
+  cluster_name    = aws_eks_cluster.eks_cluster.name
+  node_group_name = "veera-eks-ng"
+  node_role_arn   = data.aws_iam_role.worker_role.arn
+  subnet_ids      = [data.aws_subnet.subnet1.id, data.aws_subnet.subnet2.id]
 
   scaling_config {
     desired_size = 2
-    max_size     = 4
+    max_size     = 3
     min_size     = 1
   }
 
-  update_config {
-    max_unavailable = 1
-  }
+  instance_types = ["t3.medium"]
 
   depends_on = [
-    aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
-    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
-    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
+    aws_eks_cluster.eks_cluster
   ]
 }
