@@ -82,7 +82,7 @@ resource "aws_iam_role_policy_attachment" "autoscaler" {
 
 # Instance Profile for Worker
 resource "aws_iam_instance_profile" "worker" {
-  name = "veera-eks-worker-new-profile2"
+  name = "veera-eks-worker-new-profile3"
   role = data.aws_iam_role.worker.name
 }
 
