@@ -141,7 +141,7 @@ resource "aws_eks_node_group" "node_grp" {
   instance_types  = ["t2.small"]
 
   remote_access {
-    ec2_ssh_key               = "my-key" # apna SSH key ka naam do
+    ec2_ssh_key               = "lint" # apna SSH key ka naam do
     source_security_group_ids = [data.aws_security_group.selected.id]
   }
 
