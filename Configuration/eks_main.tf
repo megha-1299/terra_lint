@@ -80,10 +80,11 @@ resource "aws_iam_role_policy_attachment" "autoscaler" {
   role       = data.aws_iam_role.worker.name
 }
 
-# Instance Profile for Worker
-resource "aws_iam_instance_profile" "worker" {
+# ==========================
+# Use existing Instance Profile (Datasource instead of Resource)
+# ==========================
+data "aws_iam_instance_profile" "worker" {
   name = "veera-eks-worker-new-profile3"
-  role = data.aws_iam_role.worker.name
 }
 
 # ==========================
@@ -115,7 +116,7 @@ data "aws_subnet" "subnet_2" {
 data "aws_security_group" "selected" {
   filter {
     name   = "tag:Name"
-    values = ["sg"] # Replace with your SG name if needed
+    values = ["sg"] # Replace with your SG tag value
   }
   vpc_id = data.aws_vpc.main.id
 }
@@ -180,4 +181,3 @@ resource "aws_eks_node_group" "node-grp" {
     aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly,
   ]
 }
-
